@@ -3,21 +3,26 @@ package com.epam.bigdata2016.minskq3.task8;
 
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
+import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.types.Event;
+import com.restfb.types.User;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.SparkSession;
+import scala.Tuple2;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.reverseOrder;
 import static java.util.stream.Collectors.*;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import com.restfb.FacebookClient;
-import com.restfb.types.User;
-import org.apache.commons.lang.StringUtils;
-
 
 public class SparkApp {
     private static final Pattern SPACE = Pattern.compile(" ");
@@ -26,77 +31,45 @@ public class SparkApp {
 
     public static void main(String[] args) throws Exception {
 
-//        if (args.length < 1) {
-//            System.err.println("Usage: JavaWordCount <file>");
-//            System.exit(1);
-//        }
-//
-//        SparkSession spark = SparkSession
-//                .builder()
-//                .appName("JavaWordCount")
-//                .getOrCreate();
-//
-//        //JavaRDD<String> distFile = sc.textFile("data.txt");
-//        JavaRDD<String> lines = spark.read().text(args[0]).javaRDD();
-//
-//        JavaRDD<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
-//            @Override
-//            public Iterator<String> call(String s) {
-//                return Arrays.asList(SPACE.split(s)).iterator();
-//            }
-//        });
-//
-//        JavaPairRDD<String, Integer> ones = words.mapToPair(
-//                new PairFunction<String, String, Integer>() {
-//                    @Override
-//                    public Tuple2<String, Integer> call(String s) {
-//                        return new Tuple2<>(s, 1);
-//                    }
-//                });
-//
-//        JavaPairRDD<String, Integer> counts = ones.reduceByKey(
-//                new Function2<Integer, Integer, Integer>() {
-//                    @Override
-//                    public Integer call(Integer i1, Integer i2) {
-//                        return i1 + i2;
-//                    }
-//                });
-//
-//        List<Tuple2<String, Integer>> output = counts.collect();
-//        for (Tuple2<?,?> tuple : output) {
-//            System.out.println(tuple._1() + ": " + tuple._2());
-//        }
+        if (args.length < 1) {
+            System.err.println("Usage: JavaWordCount <file>");
+            System.exit(1);
+        }
 
+        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").getOrCreate();
 
-//
-//        //Date today = new Date(System.currentTimeMillis());
-//        Date tomorrow = new Date(System.currentTimeMillis() + 1000L * 60L * 60L * 48L);
-//        Date twoDaysFromNow = new Date(System.currentTimeMillis() + 1000L * 60L * 60L * 72L);
-//
-//        FacebookClient facebookClient = new DefaultFacebookClient("EAACEdEose0cBACU0veHN6r7RUzZBVxoGE5eK5gOBxZBBoSpgskRiYm4SIgbGodGk77OiJnhmZBN01SZAZBgMkRMxzPKXyMqTvUEZAFNIS3hLTkSg7lURwEt0WDLpIxmYIcRGAUMhu6EaDGOhjqBfKGO5zGTWGIlGwPxvDon4T6tQZDZD");
-//        Connection<Event> eventList =
-//                facebookClient.fetchConnection("search", Event.class,
-//                        Parameter.with("q", "Moscow"), Parameter.with("type", "event"), Parameter.with("start_time", tomorrow),
-//                        Parameter.with("end_time", twoDaysFromNow));
-//
-//        for (List<Event> eventL : eventList) {
-//            for (Event event : eventL) {
-//
-//                System.out.println("######");
-//                System.out.println(event.getName());
-//                System.out.println(event.getStartTime().toString());
-//                event.getAttendingCount();
-//                //System.out.println(event.get);
-//                System.out.println(event.getLocation());
-//                if (event.getPlace() != null) {
-//                    System.out.println(event.getPlace().getLocation());
-//                    System.out.println(event.getPlace().getLocation().getLatitude());
-//                }
-//            }
-//        }
+        //JavaRDD<String> distFile = sc.textFile("data.txt");
+        JavaRDD<String> lines = spark.read().text(args[0]).javaRDD();
 
-        //spark.stop();
+        JavaRDD<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
+            @Override
+            public Iterator<String> call(String s) {
+                return Arrays.asList(SPACE.split(s)).iterator();
+            }
+        });
 
+        JavaPairRDD<String, Integer> ones = words.mapToPair(
+                new PairFunction<String, String, Integer>() {
+                    @Override
+                    public Tuple2<String, Integer> call(String s) {
+                        return new Tuple2<>(s, 1);
+                    }
+                });
+
+        JavaPairRDD<String, Integer> counts = ones.reduceByKey(
+                new Function2<Integer, Integer, Integer>() {
+                    @Override
+                    public Integer call(Integer i1, Integer i2) {
+                        return i1 + i2;
+                    }
+                });
+
+        List<Tuple2<String, Integer>> output = counts.collect();
+        System.out.println("####1");
+        for (Tuple2<?, ?> tuple : output) {
+            System.out.println(tuple._1() + ": " + tuple._2());
+        }
+        System.out.println("####2");
 
         List<String> keyWords = new ArrayList<>();
         keyWords.add("minsk");
@@ -120,11 +93,11 @@ public class SparkApp {
                     sum = +event.getAttendingCount();
 
                     if (StringUtils.isNotBlank(event.getDescription()) && StringUtils.isNotEmpty(event.getDescription())) {
-                        List<String> words = Pattern.compile("\\W").splitAsStream(event.getDescription())
+                        List<String> cuurentWordsList = Pattern.compile("\\W").splitAsStream(event.getDescription())
                                 .filter((s -> !s.isEmpty()))
                                 .filter(w -> !Pattern.compile("\\d+").matcher(w).matches())
                                 .collect(toList());
-                        allWordsFromEventsDesc.addAll(words);
+                        allWordsFromEventsDesc.addAll(cuurentWordsList);
                     }
                     resultEntity.getEventIds().add(event.getId());
                 }
@@ -175,11 +148,14 @@ public class SparkApp {
 
             Map<String, Long> userSortedMap = usersUnsortedMap.entrySet().stream()
                     .sorted(Map.Entry.comparingByValue(reverseOrder()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,(e1, e2) -> e1, LinkedHashMap::new));
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
             for (String str : userSortedMap.keySet()) {
                 System.out.println(str + "_" + userSortedMap.get(str));
             }
+
+
+            spark.stop();
         }
     }
 }
