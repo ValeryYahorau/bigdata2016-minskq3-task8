@@ -38,16 +38,16 @@ public class SparkApp {
             System.err.println("Usage: SparkApp <file1> <file2>");
             System.exit(1);
         }
-        String filePath1 = args[0];
-        String filePath2 = args[1];
-        System.out.println("!1" + filePath1);
-        System.out.println("!2" + filePath2);
+        //String filePath1 = args[0];
+        //String filePath2 = args[1];
+        String filePath1 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in1.txt";
+        String filePath2 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in2.txt";
 
 
         SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").getOrCreate();
 
 
-        JavaRDD<String> tagsRDD = spark.read().textFile(args[1]).javaRDD();
+        JavaRDD<String> tagsRDD = spark.read().textFile(filePath2).javaRDD();
 
         JavaPairRDD<Integer, List<String>> tagsIdsPairs = tagsRDD.mapToPair(new PairFunction<String, Integer, List<String>>() {
             public Tuple2<Integer, List<String>> call(String line) {
@@ -74,7 +74,7 @@ public class SparkApp {
 //        tagsDF.createOrReplaceTempView("tags");
 
 
-        JavaRDD<LogEntity> logEntitiesRDD = spark.read().textFile(args[0]).javaRDD().map(new Function<String, LogEntity>() {
+        JavaRDD<LogEntity> logEntitiesRDD = spark.read().textFile(filePath1).javaRDD().map(new Function<String, LogEntity>() {
             @Override
             public LogEntity call(String line) throws Exception {
                 String[] parts = line.split("\\s+");
