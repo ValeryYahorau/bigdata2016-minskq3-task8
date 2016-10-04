@@ -12,6 +12,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -34,10 +35,10 @@ public class SparkApp {
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length < 2) {
-            System.err.println("Usage: SparkApp <file1> <file2>");
-            System.exit(1);
-        }
+//        if (args.length < 2) {
+//            System.err.println("Usage: SparkApp <file1> <file2>");
+//            System.exit(1);
+//        }
         //String filePath1 = args[0];
         //String filePath2 = args[1];
         String filePath1 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in1.txt";
@@ -50,6 +51,7 @@ public class SparkApp {
         //TAGS
         JavaRDD<String> tagsRDD = spark.read().textFile(filePath2).javaRDD();
         JavaPairRDD<Long, List<String>> tagsIdsPairs = tagsRDD.mapToPair(new PairFunction<String, Long, List<String>>() {
+            @Override
             public Tuple2<Long, List<String>> call(String line) {
                 String[] parts = line.split("\\s+");
                 return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
@@ -60,6 +62,7 @@ public class SparkApp {
         //CITIES
         JavaRDD<String> citiesRDD = spark.read().textFile(filePath3).javaRDD();
         JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
+            @Override
             public Tuple2<Integer, String> call(String line) {
                 String[] parts = line.split("\\s+");
                 return new Tuple2<Integer, String>(Integer.parseInt(parts[0]), parts[1]);
@@ -88,9 +91,37 @@ public class SparkApp {
                 return logEntity;
             }
         });
-        Dataset<Row> logsDF = spark.createDataFrame(logEntitiesRDD, LogEntity.class);
-        logsDF.createOrReplaceTempView("logs");
-        logsDF.show();
+        JavaPairRDD<DayCity, List<String>> dayCityTagsPrePairs = logEntitiesRDD.mapToPair(new PairFunction<LogEntity, DayCity, List<String>>() {
+            @Override
+            public Tuple2<DayCity, List<String>> call(LogEntity le) {
+                DayCity dc = new DayCity();
+                dc.setCity(le.getCity());
+                dc.setDate(le.getDate());
+                return new Tuple2<DayCity, List<String>>(dc, le.getTags());
+            }
+        });
+        JavaPairRDD<DayCity, List<String>> dayCityTagsPairs = dayCityTagsPrePairs.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {
+            @Override
+            public List<String> call(List<String> i1, List<String> i2) {
+                i1.removeAll(i2);
+                i1.addAll(i2);
+                return i1;
+            }
+        });
+
+        List<Tuple2<DayCity, List<String>>> output = dayCityTagsPairs.collect();
+        for (Tuple2<DayCity,List<String>> tuple : output) {
+            System.out.println("####_" + tuple._1().getCity()+"_"+tuple._1().getDate());
+            for (String tag : tuple._2()) {
+                System.out.println("Tag : " + tag);
+            }
+        }
+
+
+//        Dataset<Row> logsDF = spark.createDataFrame(logEntitiesRDD, LogEntity.class);
+//        logsDF.createOrReplaceTempView("logs");
+//        logsDF.show();
+
 
         spark.stop();
 //    }
