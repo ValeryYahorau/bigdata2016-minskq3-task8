@@ -91,12 +91,10 @@ public class SparkApp {
                 return logEntity;
             }
         });
+        Dataset<Row> logsDF = spark.createDataFrame(logEntitiesRDD, LogEntity.class);
+        logsDF.createOrReplaceTempView("logs");
+        logsDF.show();
 
-
-
-        for (LogEntity l : logEntitiesRDD.collect()) {
-            System.out.println(l.toString());
-        }
         spark.stop();
 //    }
 //
