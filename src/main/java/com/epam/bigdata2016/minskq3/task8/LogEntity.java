@@ -12,6 +12,7 @@ public class LogEntity {
     private List<String> tags;
     private String date;
     private int cityId;
+    private String city;
 
     public long getUserTagsId() {
         return userTagsId;
@@ -45,13 +46,22 @@ public class LogEntity {
         this.tags = tags;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
     @Override
     public String toString() {
         return "LogEntity{" +
                 "userTagsId=" + userTagsId +
                 ", tags=" + tags +
-                ", date=" + date +
+                ", date='" + date + '\'' +
                 ", cityId=" + cityId +
+                ", city='" + city + '\'' +
                 '}';
     }
 }

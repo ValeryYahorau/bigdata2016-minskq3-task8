@@ -42,48 +42,46 @@ public class SparkApp {
         //String filePath2 = args[1];
         String filePath1 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in1.txt";
         String filePath2 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in2.txt";
+        String filePath3 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in3.txt";
 
 
         SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", "hdfs:///tmp/sparkhw1").getOrCreate();
 
-
+        //TAGS
         JavaRDD<String> tagsRDD = spark.read().textFile(filePath2).javaRDD();
         JavaPairRDD<Long, List<String>> tagsIdsPairs = tagsRDD.mapToPair(new PairFunction<String, Long, List<String>>() {
             public Tuple2<Long, List<String>> call(String line) {
                 String[] parts = line.split("\\s+");
-                System.out.println("###1 " + parts[0]);
-                System.out.println("###2 " + parts[1]);
                 return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
             }
         });
         Map<Long, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
 
-//        JavaRDD<TagsEntity> tagsRDD = spark.read().text(args[0]).javaRDD().map(new Function<String, TagsEntity>() {
-//            @Override
-//            public TagsEntity call(String line) throws Exception {
-//                String[] parts = line.split("\\s+");
-//
-//                TagsEntity tagsEntity = new TagsEntity();
-//                tagsEntity.setTagsId(Integer.parseInt(parts[0]);
-//                tagsEntity.setTags(Arrays.asList(parts[1].split(",")));
-//                return tagsEntity;
-//            }
-//        });
-//        Dataset<Row> tagsDF = spark.createDataFrame(tagsRDD, TagsEntity.class);
-//        tagsDF.createOrReplaceTempView("tags");
+        //CITIES
+        JavaRDD<String> citiesRDD = spark.read().textFile(filePath3).javaRDD();
+        JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
+            public Tuple2<Integer, String> call(String line) {
+                String[] parts = line.split("\\s+");
+                return new Tuple2<Integer, String>(Integer.parseInt(parts[0]), parts[1]);
+            }
+        });
+        Map<Integer, String> citiesMap = citiesIdsPairs.collectAsMap();
 
-
+        //LOGS with tags and cities
         JavaRDD<LogEntity> logEntitiesRDD = spark.read().textFile(filePath1).javaRDD().map(new Function<String, LogEntity>() {
             @Override
             public LogEntity call(String line) throws Exception {
                 String[] parts = line.split("\\s+");
 
                 LogEntity logEntity = new LogEntity();
+
                 logEntity.setUserTagsId(Long.parseLong(parts[parts.length - 2]));
                 List<String> tagsList = tagsMap.get(logEntity.getUserTagsId());
                 logEntity.setTags(tagsList);
 
                 logEntity.setCityId(Integer.parseInt(parts[parts.length - 15]));
+                String city = citiesMap.get(logEntity.getCityId());
+                logEntity.setCity(city);
 
                 String dateInString = parts[1].substring(0, 8);
                 logEntity.setDate(dateInString);
