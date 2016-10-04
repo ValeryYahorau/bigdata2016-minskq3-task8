@@ -44,7 +44,7 @@ public class SparkApp {
         String filePath2 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in2.txt";
 
 
-        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").getOrCreate();
+        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", "hdfs:///tmp/sparkhw1").getOrCreate();
 
 
         JavaRDD<String> tagsRDD = spark.read().textFile(filePath2).javaRDD();
