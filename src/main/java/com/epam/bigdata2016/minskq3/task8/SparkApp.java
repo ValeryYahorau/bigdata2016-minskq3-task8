@@ -38,6 +38,11 @@ public class SparkApp {
             System.err.println("Usage: SparkApp <file1> <file2>");
             System.exit(1);
         }
+        String filePath1 = args[0];
+        String filePath2 = args[1];
+        System.out.println("!1" + filePath1);
+        System.out.println("!2" + filePath2);
+
 
         SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").getOrCreate();
 
