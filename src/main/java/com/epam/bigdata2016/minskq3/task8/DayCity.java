@@ -1,9 +1,11 @@
 package com.epam.bigdata2016.minskq3.task8;
 
+import java.io.Serializable;
+
 /**
  * Created by valeryyegorov on 04.10.16.
  */
-public class DayCity {
+public class DayCity implements Serializable{
 
     private String date;
     private String city;
