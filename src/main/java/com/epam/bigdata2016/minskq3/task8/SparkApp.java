@@ -103,9 +103,12 @@ public class SparkApp {
         JavaPairRDD<DayCity, List<String>> dayCityTagsPairs = dayCityTagsPrePairs.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {
             @Override
             public List<String> call(List<String> i1, List<String> i2) {
-                i1.removeAll(i2);
-                i1.addAll(i2);
-                return i1;
+                List<String> a1 = new ArrayList<>(i1);
+                List<String> a2 = new ArrayList<>(i2);
+
+                a1.removeAll(a2);
+                a1.addAll(a2);
+                return a1;
             }
         });
 
