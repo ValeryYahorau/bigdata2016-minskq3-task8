@@ -10,7 +10,7 @@ public class LogEntity {
 
     private long userTagsId;
     private List<String> tags;
-    private Date date;
+    private String date;
     private int cityId;
 
     public long getUserTagsId() {
@@ -21,11 +21,11 @@ public class LogEntity {
         this.userTagsId = userTagsId;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

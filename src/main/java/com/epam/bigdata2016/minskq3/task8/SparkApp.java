@@ -85,10 +85,8 @@ public class SparkApp {
 
                 logEntity.setCityId(Integer.parseInt(parts[parts.length - 15]));
 
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
                 String dateInString = parts[1].substring(0, 8);
-                Date date = formatter.parse(dateInString);
-                logEntity.setDate(date);
+                logEntity.setDate(dateInString);
                 return logEntity;
             }
         });
