@@ -8,16 +8,16 @@ import java.util.List;
  */
 public class LogEntity {
 
-    private int userTagsId;
+    private long userTagsId;
     private List<String> tags;
     private Date date;
     private int cityId;
 
-    public int getUserTagsId() {
+    public long getUserTagsId() {
         return userTagsId;
     }
 
-    public void setUserTagsId(int userTagsId) {
+    public void setUserTagsId(long userTagsId) {
         this.userTagsId = userTagsId;
     }
 

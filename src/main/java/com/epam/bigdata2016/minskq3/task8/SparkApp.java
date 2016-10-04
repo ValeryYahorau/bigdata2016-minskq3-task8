@@ -48,16 +48,15 @@ public class SparkApp {
 
 
         JavaRDD<String> tagsRDD = spark.read().textFile(filePath2).javaRDD();
-
-        JavaPairRDD<Integer, List<String>> tagsIdsPairs = tagsRDD.mapToPair(new PairFunction<String, Integer, List<String>>() {
-            public Tuple2<Integer, List<String>> call(String line) {
+        JavaPairRDD<Long, List<String>> tagsIdsPairs = tagsRDD.mapToPair(new PairFunction<String, Long, List<String>>() {
+            public Tuple2<Long, List<String>> call(String line) {
                 String[] parts = line.split("\\s+");
                 System.out.println("###1 " + parts[0]);
                 System.out.println("###2 " + parts[1]);
-                return new Tuple2<Integer, List<String>>(Integer.parseInt(parts[0]), Arrays.asList(parts[1].split(",")));
+                return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
             }
         });
-        Map<Integer, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
+        Map<Long, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
 
 //        JavaRDD<TagsEntity> tagsRDD = spark.read().text(args[0]).javaRDD().map(new Function<String, TagsEntity>() {
 //            @Override
@@ -80,8 +79,9 @@ public class SparkApp {
                 String[] parts = line.split("\\s+");
 
                 LogEntity logEntity = new LogEntity();
-                logEntity.setUserTagsId(Integer.parseInt(parts[parts.length - 2]));
+                logEntity.setUserTagsId(Long.parseLong(parts[parts.length - 2]));
                 List<String> tagsList = tagsMap.get(logEntity.getUserTagsId());
+                logEntity.setTags(tagsList);
 
                 logEntity.setCityId(Integer.parseInt(parts[parts.length - 15]));
 

@@ -7,14 +7,14 @@ import java.util.List;
  */
 public class TagsEntity {
 
-    private int tagsId;
+    private long tagsId;
     private List<String> tags;
 
-    public int getTagsId() {
+    public long getTagsId() {
         return tagsId;
     }
 
-    public void setTagsId(int tagsId) {
+    public void setTagsId(long tagsId) {
         this.tagsId = tagsId;
     }
 
