@@ -52,7 +52,7 @@ public class SparkApp {
                 return new Tuple2<Integer, List<String>>(Integer.parseInt(parts[0]), Arrays.asList(parts[1].split(",")));
             }
         });
-        Map<Integer,List<String>> tagsMap = tagsIdsPairs.collectAsMap();
+        Map<Integer, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
 
 //        JavaRDD<TagsEntity> tagsRDD = spark.read().text(args[0]).javaRDD().map(new Function<String, TagsEntity>() {
 //            @Override
@@ -69,23 +69,19 @@ public class SparkApp {
 //        tagsDF.createOrReplaceTempView("tags");
 
 
-
-
-
-
         JavaRDD<LogEntity> logEntitiesRDD = spark.read().textFile(args[0]).javaRDD().map(new Function<String, LogEntity>() {
             @Override
             public LogEntity call(String line) throws Exception {
                 String[] parts = line.split("\\s+");
 
                 LogEntity logEntity = new LogEntity();
-                logEntity.setUserTagsId(Integer.parseInt(parts[parts.length-2]));
-                List<String> tagsList  = tagsMap.get(logEntity.getUserTagsId());
+                logEntity.setUserTagsId(Integer.parseInt(parts[parts.length - 2]));
+                List<String> tagsList = tagsMap.get(logEntity.getUserTagsId());
 
-                logEntity.setCityId(Integer.parseInt(parts[parts.length-15]));
+                logEntity.setCityId(Integer.parseInt(parts[parts.length - 15]));
 
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-                String dateInString = parts[1].substring(0,8);
+                String dateInString = parts[1].substring(0, 8);
                 Date date = formatter.parse(dateInString);
                 logEntity.setDate(date);
                 return logEntity;
@@ -219,7 +215,7 @@ public class SparkApp {
 //            }
 
 
-            spark.stop();
-        }
+        spark.stop();
     }
+
 }
