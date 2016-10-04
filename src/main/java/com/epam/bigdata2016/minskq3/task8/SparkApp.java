@@ -112,11 +112,13 @@ public class SparkApp {
             }
         });
 
+
+        System.out.println("### TASK1. Collect all unique keyword per day per location (city);");
         List<Tuple2<DayCity, List<String>>> output = dayCityTagsPairs.collect();
-        for (Tuple2<DayCity,List<String>> tuple : output) {
-            System.out.println("####_" + tuple._1().getCity()+"_"+tuple._1().getDate());
+        for (Tuple2<DayCity, List<String>> tuple : output) {
+            System.out.println("City : " + tuple._1().getCity() + " and date : " + tuple._1().getDate() + " have next tags: ");
             for (String tag : tuple._2()) {
-                System.out.println("Tag : " + tag);
+                System.out.print(tag + " ");
             }
         }
 
