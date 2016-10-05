@@ -148,7 +148,7 @@ public class SparkApp {
             public TagEvents call(String tag) throws Exception {
 
                 Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
-                        Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "id,name,description,place,attending_count"));
+                        Parameter.with("q", tag), Parameter.with("type", "event"));
 
                 List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
                 for (List<Event> eventList : eventConnections) {
