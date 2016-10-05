@@ -253,9 +253,11 @@ public class SparkApp {
         JavaRDD<FacebookEventInfo> allEventsWithAttendees = allEventsRDD.map(new Function<FacebookEventInfo, FacebookEventInfo>() {
             public FacebookEventInfo call(FacebookEventInfo fei) throws Exception {
 
+                System.out.println("%%%1 " + fei.getId());
                 Connection<User> attendesConncetions = facebookClient.fetchConnection(fei.getId() + "/attending", User.class);
                 List<FacebookAttendeeInfo> result = new ArrayList<FacebookAttendeeInfo>();
                 for (List<User> userList : attendesConncetions) {
+                    System.out.println("%%%2 " + userList.size());
                     for (User user : userList) {
                         FacebookAttendeeInfo fai = new FacebookAttendeeInfo(user.getName(), user.getId());
                         result.add(fai);
@@ -287,7 +289,7 @@ public class SparkApp {
             }
         });
 
-        JavaRDD<FacebookAttendeeInfo> faiResultRDD= allAttendesCounts.map(new Function<Tuple2<FacebookAttendeeInfo, Integer>, FacebookAttendeeInfo>() {
+        JavaRDD<FacebookAttendeeInfo> faiResultRDD = allAttendesCounts.map(new Function<Tuple2<FacebookAttendeeInfo, Integer>, FacebookAttendeeInfo>() {
             @Override
             public FacebookAttendeeInfo call(Tuple2<FacebookAttendeeInfo, Integer> t) throws Exception {
                 t._1().setCount(t._2);
@@ -295,14 +297,19 @@ public class SparkApp {
             }
         });
 
-
-        Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
-        allAttendeesDF.createOrReplaceTempView("allAttendees");
-        allAttendeesDF.orderBy("count");
-
         System.out.println("### TASK3. Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences; ");
         System.out.println("==================================================================");
-        allAttendeesDF.limit(20).show();
+        List<FacebookAttendeeInfo> output3 = faiResultRDD.collect().subList(0, 10);
+        for (FacebookAttendeeInfo fai : output3) {
+            System.out.println("%%%3" + fai.getId() + " " + fai.getName() + " " + fai.getCount());
+        }
+
+//        Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
+//        allAttendeesDF.createOrReplaceTempView("allAttendees");
+//        allAttendeesDF.orderBy("count");
+
+
+        //allAttendeesDF.limit(20).show();
 
 
         spark.stop();
