@@ -143,7 +143,7 @@ public class SparkApp {
 
                 System.out.println("$$$1 " + tag);
                 Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
-                        Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "attending_count,place,name,description,start_datetime"));
+                        Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "id,attending_count,place,name,description,start_time"));
 
                 List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
                 for (List<Event> eventList : eventConnections) {
