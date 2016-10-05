@@ -64,8 +64,8 @@ public class SparkApp {
 
         //CITIES
         Dataset<String> data2 = spark.read().textFile(filePath3);
-        String header2 = data.first();
-        JavaRDD<String> citiesRDD = data.filter(x -> !x.equals(header)).javaRDD();
+        String header2 = data2.first();
+        JavaRDD<String> citiesRDD = data2.filter(x -> !x.equals(header2)).javaRDD();
         JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
             @Override
             public Tuple2<Integer, String> call(String line) {
