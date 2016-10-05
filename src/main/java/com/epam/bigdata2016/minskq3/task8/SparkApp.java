@@ -2,10 +2,7 @@ package com.epam.bigdata2016.minskq3.task8;
 
 
 import com.epam.bigdata2016.minskq3.task8.model.*;
-import com.restfb.Connection;
-import com.restfb.DefaultFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.Parameter;
+import com.restfb.*;
 import com.restfb.types.Event;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -33,10 +30,28 @@ public class SparkApp {
     private static final String FACEBOOK_TOKEN = "EAACEdEose0cBANTnEt9SbjbmNZCZA7nqEmQQpSqPeFfzXSUJv7xh0LqZClS8ZA31c2gZCe923LeL566GA6iVqf6aKZCMOTFKor0WvRVPegBH9E5qYviGRYAOj3lZCYxZBNFWZAoQJG0FeIlIWqexgl3OAm0R03VTEmSHU0aRDsJCI9gZDZD";
     private static final String UNKNOWN = "unknown";
     private static final String DEFAULT_DATE = "2000-01-01";
-    private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN);
+    private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN, Version.VERSION_2_5);
 
 
     public static void main(String[] args) throws Exception {
+
+
+//        String tag = "spray";
+//        System.out.println("$$$1 " + tag);
+//        Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
+//                Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "attending_count,place,name,description,start_datetime"));
+//
+//        List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
+//
+//        System.out.println("$$$2 " + eventConnections.getTotalCount());
+//        for (List<Event> eventList : eventConnections) {
+//            System.out.println("$$$3 " + eventList.size());
+//            for (Event event : eventList) {
+//
+//
+//            }
+//        }
+
 
 //        if (args.length < 2) {
 //            System.err.println("Usage: SparkApp <file1> <file2>");
@@ -163,8 +178,8 @@ public class SparkApp {
                             } else {
                                 fe.setCity(UNKNOWN);
                             }
-                            if (event.getStartTime() !=null) {
-                                fe.setDate(event.getStartTime().toString().substring(0,10));
+                            if (event.getStartTime() != null) {
+                                fe.setDate(event.getStartTime().toString().substring(0, 10));
                             } else {
                                 fe.setDate(DEFAULT_DATE);
                             }
