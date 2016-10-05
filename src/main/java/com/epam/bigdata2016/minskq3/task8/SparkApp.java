@@ -19,7 +19,9 @@ import scala.Tuple2;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
 import org.apache.spark.sql.functions;
+
 import static java.util.Comparator.reverseOrder;
 
 
@@ -278,7 +280,6 @@ public class SparkApp {
         JavaPairRDD<FacebookAttendeeInfo, Integer> allAttendesPairRDD = allAttendeesRDD.mapToPair(new PairFunction<FacebookAttendeeInfo, FacebookAttendeeInfo, Integer>() {
             @Override
             public Tuple2<FacebookAttendeeInfo, Integer> call(FacebookAttendeeInfo fei) {
-                System.out.println("!!!!!!1 " + fei.getName());
                 return new Tuple2<>(fei, 1);
             }
         });
@@ -298,34 +299,26 @@ public class SparkApp {
             }
         });
 
+
+        JavaRDD<FacebookAttendeeInfo> sortedAttendeesRDD = faiResultRDD.sortBy(new Function<FacebookAttendeeInfo, Integer>() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Integer call(FacebookAttendeeInfo value) throws Exception {
+                return value.getCount();
+            }
+        }, false, 1);
+
         System.out.println("### TASK3. Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences; ");
         System.out.println("==================================================================");
-        List<FacebookAttendeeInfo> output3 = faiResultRDD.collect();
+        List<FacebookAttendeeInfo> output3 = sortedAttendeesRDD.collect();
         for (FacebookAttendeeInfo fai : output3) {
             System.out.println("%%%3" + fai.getId() + " " + fai.getName() + " " + fai.getCount());
         }
 
-       Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
-        allAttendeesDF.createOrReplaceTempView("allAttendees1");
-        allAttendeesDF.orderBy(functions.asc("count"));
-        allAttendeesDF.show(200);
-
-        Dataset<Row> allAttendeesDF2 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
-        allAttendeesDF2.createOrReplaceTempView("allAttendees2");
-        allAttendeesDF2.orderBy(functions.desc("count"));
-        allAttendeesDF2.show(200);
-
-        Dataset<Row> allAttendeesDF3 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
-        allAttendeesDF3.createOrReplaceTempView("allAttendees3");
-        allAttendeesDF3.sort(functions.asc("count"));
-        allAttendeesDF3.show(200);
-
-        Dataset<Row> allAttendeesDF4 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
-        allAttendeesDF4.createOrReplaceTempView("allAttendees4");
-        allAttendeesDF4.sort(functions.desc("count"));
-        allAttendeesDF4.show(200);
-
-        allAttendeesDF2.filter(functions.col("count").gt(1)).show(200);
+        Dataset<Row> allAttendeesDF = spark.createDataFrame(sortedAttendeesRDD, FacebookAttendeeInfo.class);
+        allAttendeesDF.createOrReplaceTempView("allAttendees");
+        allAttendeesDF.show(20);
 
         spark.stop();
     }
