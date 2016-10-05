@@ -308,24 +308,24 @@ public class SparkApp {
        Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
         allAttendeesDF.createOrReplaceTempView("allAttendees1");
         allAttendeesDF.orderBy(functions.asc("count"));
-        allAttendeesDF.show();
+        allAttendeesDF.show(200);
 
         Dataset<Row> allAttendeesDF2 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
         allAttendeesDF2.createOrReplaceTempView("allAttendees2");
         allAttendeesDF2.orderBy(functions.desc("count"));
-        allAttendeesDF2.show();
+        allAttendeesDF2.show(200);
 
         Dataset<Row> allAttendeesDF3 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
         allAttendeesDF3.createOrReplaceTempView("allAttendees3");
         allAttendeesDF3.sort(functions.asc("count"));
-        allAttendeesDF3.show();
+        allAttendeesDF3.show(200);
 
         Dataset<Row> allAttendeesDF4 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
         allAttendeesDF4.createOrReplaceTempView("allAttendees4");
         allAttendeesDF4.sort(functions.desc("count"));
-        allAttendeesDF4.show();
+        allAttendeesDF4.show(200);
 
-        allAttendeesDF2.filter(functions.col("count").gt(1)).limit(200).show();
+        allAttendeesDF2.filter(functions.col("count").gt(1)).show(200);
 
         spark.stop();
     }
