@@ -19,7 +19,7 @@ import scala.Tuple2;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import org.apache.spark.sql.functions;
 import static java.util.Comparator.reverseOrder;
 
 
@@ -306,11 +306,13 @@ public class SparkApp {
 
        Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
         allAttendeesDF.createOrReplaceTempView("allAttendees");
-        allAttendeesDF.orderBy("count");
-
-
+        allAttendeesDF.orderBy(functions.asc("count"));
         allAttendeesDF.limit(20).show();
 
+        Dataset<Row> allAttendeesDF2 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
+        allAttendeesDF2.createOrReplaceTempView("allAttendees");
+        allAttendeesDF2.orderBy(functions.desc("count"));
+        allAttendeesDF2.limit(20).show();
 
         spark.stop();
     }
