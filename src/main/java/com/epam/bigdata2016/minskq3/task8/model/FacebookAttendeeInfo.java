@@ -39,4 +39,25 @@ public class FacebookAttendeeInfo implements Serializable{
     public void setCount(int count) {
         this.count = count;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FacebookAttendeeInfo that = (FacebookAttendeeInfo) o;
+
+        if (getCount() != that.getCount()) return false;
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
+        return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName() != null ? getName().hashCode() : 0;
+        result = 31 * result + (getId() != null ? getId().hashCode() : 0);
+        result = 31 * result + getCount();
+        return result;
+    }
 }
