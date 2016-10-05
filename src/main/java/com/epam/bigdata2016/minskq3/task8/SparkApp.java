@@ -307,12 +307,12 @@ public class SparkApp {
        Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
         allAttendeesDF.createOrReplaceTempView("allAttendees");
         allAttendeesDF.orderBy(functions.asc("count"));
-        allAttendeesDF.limit(20).show();
+        allAttendeesDF.show();
 
         Dataset<Row> allAttendeesDF2 = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
         allAttendeesDF2.createOrReplaceTempView("allAttendees");
         allAttendeesDF2.orderBy(functions.desc("count"));
-        allAttendeesDF2.limit(20).show();
+        allAttendeesDF2.show();
 
         spark.stop();
     }
