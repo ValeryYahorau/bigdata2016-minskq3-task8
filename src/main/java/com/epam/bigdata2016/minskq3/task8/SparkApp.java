@@ -14,6 +14,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,9 +27,11 @@ public class SparkApp {
     private static final String UNKNOWN = "unknown";
     private static final String DEFAULT_DATE = "2000-01-01";
     private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN, Version.VERSION_2_5);
-
+    private static final SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd");
 
     public static void main(String[] args) throws Exception {
+
+
 
 
 //        if (args.length < 2) {
@@ -157,7 +160,7 @@ public class SparkApp {
                                 fe.setCity(UNKNOWN);
                             }
                             if (event.getStartTime() != null) {
-                                fe.setDate(event.getStartTime().toString().substring(0, 10));
+                                fe.setDate(dt.format(event.getStartTime()).toString());
                             } else {
                                 fe.setDate(DEFAULT_DATE);
                             }
@@ -227,13 +230,12 @@ public class SparkApp {
         });
 
         List<Tuple2<DayCityTag, FacebookEventInfo>> output2 = dayCityTagsPairs.collect();
-        System.out.println("### TASK2.o\tFor each keyword per day per city store information like: KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N). ");
+        System.out.println("### TASK2. For each keyword per day per city store information like: KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N). ");
         System.out.println("==================================================================");
         for (Tuple2<DayCityTag, FacebookEventInfo> tuple : output2) {
 
             System.out.println("KEYWORD : " + tuple._1().getTag() + " DAY : " + tuple._1().getDate() + " CITY : " + tuple._1().getCity());
             System.out.println("TOTAL_AMOUNT_OF_VISITORS : " + tuple._2.getAttendingCount());
-
 
             Map<String, Integer> sortedMap = tuple._2.getWordsHistogram().entrySet().stream()
                     .sorted(Map.Entry.comparingByValue(reverseOrder())).limit(10)
@@ -241,7 +243,7 @@ public class SparkApp {
 
             System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10)  : ");
             for (String str : sortedMap.keySet()) {
-                System.out.println(str + "_" + sortedMap.get(str));
+                System.out.println(str + " " + sortedMap.get(str));
             }
             System.out.println("\n==================================================================");
         }
@@ -256,11 +258,7 @@ public class SparkApp {
     }
 
 }
-//
-//
-//
-//
-//
+
 //
 //        List<String> keyWords = new ArrayList<>();
 //        keyWords.add("minsk");
