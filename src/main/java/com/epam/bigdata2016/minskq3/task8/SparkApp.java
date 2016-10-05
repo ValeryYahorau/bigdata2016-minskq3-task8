@@ -304,12 +304,12 @@ public class SparkApp {
             System.out.println("%%%3" + fai.getId() + " " + fai.getName() + " " + fai.getCount());
         }
 
-//        Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
-//        allAttendeesDF.createOrReplaceTempView("allAttendees");
-//        allAttendeesDF.orderBy("count");
+       Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
+        allAttendeesDF.createOrReplaceTempView("allAttendees");
+        allAttendeesDF.orderBy("count");
 
 
-        //allAttendeesDF.limit(20).show();
+        allAttendeesDF.limit(20).show();
 
 
         spark.stop();
