@@ -302,7 +302,7 @@ public class SparkApp {
 
         System.out.println("### TASK3. Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences; ");
         System.out.println("==================================================================");
-        allAttendeesDF.show();
+        allAttendeesDF.limit(20).show();
 
 
         spark.stop();
