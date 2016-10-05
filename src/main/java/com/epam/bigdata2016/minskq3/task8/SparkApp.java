@@ -125,8 +125,10 @@ public class SparkApp {
         System.out.println("==================================================================");
         for (Tuple2<DayCity, List<String>> tuple : output) {
             System.out.println("City : " + tuple._1().getCity() + " and date : " + tuple._1().getDate() + " have next tags: ");
-            for (String tag : tuple._2()) {
-                System.out.print(tag + " ");
+            if (tuple._2 != null) {
+                for (String tag : tuple._2()) {
+                    System.out.print(tag + " ");
+                }
             }
 
             System.out.println("\n==================================================================");
