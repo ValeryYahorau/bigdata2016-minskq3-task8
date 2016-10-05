@@ -26,13 +26,20 @@ import static java.util.Comparator.reverseOrder;
 
 public class SparkApp {
     private static final String SPACE = " ";
-    private static final String FACEBOOK_TOKEN = "EAACEdEose0cBAIpXjqF1r1co6kZAyWuhdVdAepH7TZB1KL4KrLAdWfFxZAv73rS2DorfBrsVvtqfZC43PXBEbCQfSaGcWAap1eqpYXo33dyK2cCgzfOCdrmCpSaZBWxdzr8Am1gPOZAksxphKyZCSBWJQZCZCSJjQuqMuQHvMvZAxhLQZDZD";
+    private static final String FACEBOOK_TOKEN = "EAAPP1tZBuTCoBAAmyoQMwtBH4hMvcZBd8mzqHjxUIOB1ob0DmCWAbFTlotZBw2QzVnXCnTu5J84IZBu4IsMitVFTKwI9DtwCGFmJZBVZBuZCc5zW7Ou9GCepv7ZAANQOoUulYuXlUZBTRRXjCkPe2JMBjx9iE7dvGv2IZD";
     private static final String UNKNOWN = "unknown";
     private static final String DEFAULT_DATE = "2000-01-01";
     private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN, Version.VERSION_2_5);
     private static final SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd");
 
     public static void main(String[] args) throws Exception {
+
+//
+//        FacebookClient.AccessToken accessToken = new DefaultFacebookClient(Version.VERSION_2_5).obtainUserAccessToken()
+//                .obtainAppAccessToken("1072946712824874", "0ec3b51b8c9f84fe7ab8ff1558ad7df6");
+//
+//        System.out.println(accessToken.toString());
+
 
 
 //        if (args.length < 4) {
@@ -43,6 +50,8 @@ public class SparkApp {
         //String filePath1 = args[1];
         //String filePath2 = args[2];
         //String filePath3 = args[3];
+
+
         String warehouseDir = "hdfs:///tmp/sparkhw1";
         String filePath1 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in1.txt";
         String filePath2 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in2.txt";
