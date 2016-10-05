@@ -2,6 +2,7 @@ package com.epam.bigdata2016.minskq3.task8.model;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,6 +18,7 @@ public class FacebookEventInfo implements Serializable{
     private String date;
     private String tag;
     private Map<String, Integer> wordsHistogram = new HashMap<String, Integer>();
+    private List<FacebookAttendeeInfo> attendees;
 
     public FacebookEventInfo() {
     }
@@ -91,5 +93,13 @@ public class FacebookEventInfo implements Serializable{
 
     public void setWordsHistogram(Map<String, Integer> wordsHistogram) {
         this.wordsHistogram = wordsHistogram;
+    }
+
+    public List<FacebookAttendeeInfo> getAttendees() {
+        return attendees;
+    }
+
+    public void setAttendees(List<FacebookAttendeeInfo> attendees) {
+        this.attendees = attendees;
     }
 }

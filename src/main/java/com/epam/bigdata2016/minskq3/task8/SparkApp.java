@@ -3,6 +3,7 @@ package com.epam.bigdata2016.minskq3.task8;
 import com.epam.bigdata2016.minskq3.task8.model.*;
 import com.restfb.*;
 import com.restfb.types.Event;
+import com.restfb.types.User;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -11,6 +12,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
@@ -32,20 +34,21 @@ public class SparkApp {
     public static void main(String[] args) throws Exception {
 
 
-
-
 //        if (args.length < 2) {
 //            System.err.println("Usage: SparkApp <file1> <file2>");
 //            System.exit(1);
 //        }
-        //String filePath1 = args[0];
-        //String filePath2 = args[1];
+        //String waregouseDir = args[0];
+        //String filePath1 = args[1];
+        //String filePath2 = args[2];
+        //String filePath3 = args[3];
+        String waregouseDir = "hdfs:///tmp/sparkhw1";
         String filePath1 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in1.txt";
         String filePath2 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in2.txt";
         String filePath3 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in3.txt";
 
 
-        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", "hdfs:///tmp/sparkhw1").getOrCreate();
+        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", waregouseDir).getOrCreate();
 
         //TAGS
         Dataset<String> data = spark.read().textFile(filePath2);
@@ -128,7 +131,6 @@ public class SparkApp {
                     System.out.print(tag + " ");
                 }
             }
-
             System.out.println("\n==================================================================");
         }
 
@@ -144,13 +146,11 @@ public class SparkApp {
         JavaRDD<TagEvents> tagsWithEventsRDD = uniqueTagsRDD.map(new Function<String, TagEvents>() {
             public TagEvents call(String tag) throws Exception {
 
-                System.out.println("$$$1 " + tag);
                 Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
                         Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "id,attending_count,place,name,description,start_time"));
 
                 List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
                 for (List<Event> eventList : eventConnections) {
-                    System.out.println("$$$2 " + eventList.size());
                     for (Event event : eventList) {
                         if (event != null) {
                             FacebookEventInfo fe = new FacebookEventInfo(event.getId(), event.getName(), event.getDescription(), event.getAttendingCount(), tag);
@@ -243,15 +243,66 @@ public class SparkApp {
 
             System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10)  : ");
             for (String str : sortedMap.keySet()) {
-                System.out.println(str + " " + sortedMap.get(str));
+                System.out.print(str + " " + sortedMap.get(str) + " | ");
             }
             System.out.println("\n==================================================================");
         }
 
+        //TASK3
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        JavaRDD<FacebookEventInfo> allEventsWithAttendees = allEventsRDD.map(new Function<FacebookEventInfo, FacebookEventInfo>() {
+            public FacebookEventInfo call(FacebookEventInfo fei) throws Exception {
 
-//        Dataset<Row> logsDF = spark.createDataFrame(logEntitiesRDD, LogLineEntity.class);
-//        logsDF.createOrReplaceTempView("logs");
-//        logsDF.show();
+                Connection<User> attendesConncetions = facebookClient.fetchConnection(fei.getId() + "/attending", User.class);
+                List<FacebookAttendeeInfo> result = new ArrayList<FacebookAttendeeInfo>();
+                for (List<User> userList : attendesConncetions) {
+                    for (User user : userList) {
+                        FacebookAttendeeInfo fai = new FacebookAttendeeInfo(user.getName(), user.getId());
+                        result.add(fai);
+                    }
+                }
+                fei.setAttendees(result);
+                return fei;
+            }
+        });
+
+        JavaRDD<FacebookAttendeeInfo> allAttendeesRDD = allEventsWithAttendees.flatMap(new FlatMapFunction<FacebookEventInfo, FacebookAttendeeInfo>() {
+            @Override
+            public Iterator<FacebookAttendeeInfo> call(FacebookEventInfo fei) {
+                return fei.getAttendees().iterator();
+            }
+        });
+
+        JavaPairRDD<FacebookAttendeeInfo, Integer> allAttendesPairRDD = allAttendeesRDD.mapToPair(new PairFunction<FacebookAttendeeInfo, FacebookAttendeeInfo, Integer>() {
+            @Override
+            public Tuple2<FacebookAttendeeInfo, Integer> call(FacebookAttendeeInfo fei) {
+                return new Tuple2<>(fei, 1);
+            }
+        });
+
+        JavaPairRDD<FacebookAttendeeInfo, Integer> allAttendesCounts = allAttendesPairRDD.reduceByKey(new Function2<Integer, Integer, Integer>() {
+            @Override
+            public Integer call(Integer i1, Integer i2) {
+                return i1 + i2;
+            }
+        });
+
+        JavaRDD<FacebookAttendeeInfo> faiResultRDD= allAttendesCounts.map(new Function<Tuple2<FacebookAttendeeInfo, Integer>, FacebookAttendeeInfo>() {
+            @Override
+            public FacebookAttendeeInfo call(Tuple2<FacebookAttendeeInfo, Integer> t) throws Exception {
+                t._1().setCount(t._2);
+                return t._1();
+            }
+        });
+
+
+        Dataset<Row> allAttendeesDF = spark.createDataFrame(faiResultRDD, FacebookAttendeeInfo.class);
+        allAttendeesDF.createOrReplaceTempView("allAttendees");
+        allAttendeesDF.orderBy("count");
+
+        System.out.println("### TASK3. Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences; ");
+        System.out.println("==================================================================");
+        allAttendeesDF.show();
 
 
         spark.stop();
