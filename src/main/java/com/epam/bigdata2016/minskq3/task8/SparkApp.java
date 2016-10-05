@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.spark.sql.functions;
 
 import static java.util.Comparator.reverseOrder;
 
@@ -309,102 +308,12 @@ public class SparkApp {
             }
         }, false, 1);
 
-        System.out.println("### TASK3. Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences; ");
-        System.out.println("==================================================================");
-        List<FacebookAttendeeInfo> output3 = sortedAttendeesRDD.collect();
-        for (FacebookAttendeeInfo fai : output3) {
-            System.out.println("%%%3" + fai.getId() + " " + fai.getName() + " " + fai.getCount());
-        }
-
         Dataset<Row> allAttendeesDF = spark.createDataFrame(sortedAttendeesRDD, FacebookAttendeeInfo.class);
         allAttendeesDF.createOrReplaceTempView("allAttendees");
+        System.out.println("### TASK3. Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences; ");
+        System.out.println("==================================================================");
         allAttendeesDF.show(20);
 
         spark.stop();
     }
-
 }
-
-//
-//        List<String> keyWords = new ArrayList<>();
-//        keyWords.add("minsk");
-//
-//        for (String kw : keyWords) {
-//
-//            ResultEntity resultEntity = new ResultEntity();
-//            resultEntity.setKeyWord(kw);
-//
-//            FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN);
-//            Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
-//                    Parameter.with("q", kw), Parameter.with("type", "event"), Parameter.with("fields", "id,name,description,attending_count"));
-//
-//            int sum = 0;
-//
-//            List<String> allWordsFromEventsDesc = new ArrayList<>();
-//
-//            for (List<Event> eventList : eventConnections) {
-//                for (Event event : eventList) {
-//
-//                    sum = +event.getAttendingCount();
-//
-//                    if (StringUtils.isNotBlank(event.getDescription()) && StringUtils.isNotEmpty(event.getDescription())) {
-//                        List<String> cuurentWordsList = Pattern.compile("\\W").splitAsStream(event.getDescription())
-//                                .filter((s -> !s.isEmpty()))
-//                                .filter(w -> !Pattern.compile("\\d+").matcher(w).matches())
-//                                .collect(toList());
-//                        allWordsFromEventsDesc.addAll(cuurentWordsList);
-//                    }
-//                    resultEntity.getEventIds().add(event.getId());
-//                }
-//            }
-//
-//            //TOTAL_AMOUNT_OF_VISITORS
-//            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//            resultEntity.setTotalAmountAttendees(sum);
-//
-//            //TOKEN_MAP
-//            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//            Map<String, Long> unsortedMap = allWordsFromEventsDesc.stream()
-//                    .map(String::toLowerCase)
-//                    .collect(groupingBy(Function.identity(), counting()))
-//                    .entrySet().stream()
-//                    .sorted(Map.Entry.<String, Long>comparingByValue(reverseOrder()).thenComparing(Map.Entry.comparingByKey()))
-//                    .limit(10)
-//                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-//
-//            Map<String, Long> sortedMap = unsortedMap.entrySet().stream()
-//                    .sorted(Map.Entry.comparingByValue(reverseOrder()))
-//                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-//
-//            resultEntity.setTokenMap(sortedMap);
-//
-//
-//            //Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences;
-//            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//            List<String> usersList = new ArrayList<>();
-//            for (String eventId : resultEntity.getEventIds()) {
-//                //System.out.println("$1_" + eventId);
-//                Connection<User> attendesConncetions = facebookClient.fetchConnection(eventId + "/attending", User.class);
-//                for (List<User> userList : attendesConncetions) {
-//                    for (User user : userList) {
-//                        usersList.add(user.getName());
-//                    }
-//                }
-//            }
-//
-//            //Provide list of people sorted by occurrences sorted from largest to smallest.
-//            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//            Map<String, Long> usersUnsortedMap = usersList.stream()
-//                    .map(String::toLowerCase)
-//                    .collect(groupingBy(Function.identity(), counting()))
-//                    .entrySet().stream()
-//                    .sorted(Map.Entry.<String, Long>comparingByValue(reverseOrder()).thenComparing(Map.Entry.comparingByKey()))
-//                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-//
-//            Map<String, Long> userSortedMap = usersUnsortedMap.entrySet().stream()
-//                    .sorted(Map.Entry.comparingByValue(reverseOrder()))
-//                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-//
-//            for (String str : userSortedMap.keySet()) {
-//                System.out.println(str + "_" + userSortedMap.get(str));
-//            }
