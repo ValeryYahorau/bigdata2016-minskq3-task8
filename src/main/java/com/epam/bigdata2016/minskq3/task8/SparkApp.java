@@ -1,9 +1,9 @@
 package com.epam.bigdata2016.minskq3.task8;
 
-
 import com.epam.bigdata2016.minskq3.task8.model.*;
 import com.restfb.*;
 import com.restfb.types.Event;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
@@ -18,11 +18,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.reverseOrder;
-import static java.util.stream.Collectors.*;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 public class SparkApp {
@@ -34,23 +29,6 @@ public class SparkApp {
 
 
     public static void main(String[] args) throws Exception {
-
-
-//        String tag = "spray";
-//        System.out.println("$$$1 " + tag);
-//        Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
-//                Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "attending_count,place,name,description,start_datetime"));
-//
-//        List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
-//
-//        System.out.println("$$$2 " + eventConnections.getTotalCount());
-//        for (List<Event> eventList : eventConnections) {
-//            System.out.println("$$$3 " + eventList.size());
-//            for (Event event : eventList) {
-//
-//
-//            }
-//        }
 
 
 //        if (args.length < 2) {
@@ -184,14 +162,16 @@ public class SparkApp {
                                 fe.setDate(DEFAULT_DATE);
                             }
 
-                            String[] words = event.getDescription().split("\\s+");
+                            if (StringUtils.isNotEmpty(event.getDescription()) && StringUtils.isNotBlank(event.getDescription())) {
+                                String[] words = event.getDescription().split("\\s+");
 
-                            for (String word : words) {
-                                Integer f = fe.getWordsHistogram().get(word);
-                                if (f == null) {
-                                    fe.getWordsHistogram().put(word, 1);
-                                } else {
-                                    fe.getWordsHistogram().put(word, f + 1);
+                                for (String word : words) {
+                                    Integer f = fe.getWordsHistogram().get(word);
+                                    if (f == null) {
+                                        fe.getWordsHistogram().put(word, 1);
+                                    } else {
+                                        fe.getWordsHistogram().put(word, f + 1);
+                                    }
                                 }
                             }
                             eventsPerTag.add(fe);
@@ -273,7 +253,10 @@ public class SparkApp {
 
 
         spark.stop();
-//    }
+    }
+
+}
+//
 //
 //
 //
@@ -361,9 +344,3 @@ public class SparkApp {
 //            for (String str : userSortedMap.keySet()) {
 //                System.out.println(str + "_" + userSortedMap.get(str));
 //            }
-
-
-        spark.stop();
-    }
-
-}
