@@ -1,12 +1,13 @@
 package com.epam.bigdata2016.minskq3.task8.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by valeryyegorov on 04.10.16.
  */
-public class FacebookEventInfo {
+public class FacebookEventInfo implements Serializable{
 
     private String id;
     private String name;

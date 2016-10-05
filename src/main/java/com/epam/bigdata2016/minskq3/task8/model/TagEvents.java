@@ -1,8 +1,9 @@
 package com.epam.bigdata2016.minskq3.task8.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class TagEvents {
+public class TagEvents implements Serializable{
 
     private String tag;
     private List<FacebookEventInfo> events;
