@@ -254,7 +254,7 @@ public class SparkApp {
             public FacebookEventInfo call(FacebookEventInfo fei) throws Exception {
 
                 System.out.println("%%%1 " + fei.getId());
-                Connection<User> attendesConncetions = facebookClient.fetchConnection(fei.getId() + "/attending?limit=500", User.class);
+                Connection<User> attendesConncetions = facebookClient.fetchConnection(fei.getId() + "/attending", User.class, Parameter.with("limit", 500));
                 List<FacebookAttendeeInfo> result = new ArrayList<FacebookAttendeeInfo>();
                 for (List<User> userList : attendesConncetions) {
                     System.out.println("%%%2 " + userList.size());
