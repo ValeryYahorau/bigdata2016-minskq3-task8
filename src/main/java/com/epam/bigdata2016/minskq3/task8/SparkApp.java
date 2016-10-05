@@ -35,21 +35,21 @@ public class SparkApp {
     public static void main(String[] args) throws Exception {
 
 
-//        if (args.length < 2) {
-//            System.err.println("Usage: SparkApp <file1> <file2>");
+//        if (args.length < 4) {
+//            System.err.println("Usage: SparkApp <warehouseDir> <file1> <file2> <file3>");
 //            System.exit(1);
 //        }
-        //String waregouseDir = args[0];
+        //String warehouseDir = args[0];
         //String filePath1 = args[1];
         //String filePath2 = args[2];
         //String filePath3 = args[3];
-        String waregouseDir = "hdfs:///tmp/sparkhw1";
+        String warehouseDir = "hdfs:///tmp/sparkhw1";
         String filePath1 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in1.txt";
         String filePath2 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in2.txt";
         String filePath3 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in3.txt";
 
 
-        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", waregouseDir).getOrCreate();
+        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", warehouseDir).getOrCreate();
 
         //TAGS
         Dataset<String> data = spark.read().textFile(filePath2);
