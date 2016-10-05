@@ -32,6 +32,7 @@ public class SparkApp {
     private static final String SPACE = " ";
     private static final String FACEBOOK_TOKEN = "EAACEdEose0cBANTnEt9SbjbmNZCZA7nqEmQQpSqPeFfzXSUJv7xh0LqZClS8ZA31c2gZCe923LeL566GA6iVqf6aKZCMOTFKor0WvRVPegBH9E5qYviGRYAOj3lZCYxZBNFWZAoQJG0FeIlIWqexgl3OAm0R03VTEmSHU0aRDsJCI9gZDZD";
     private static final String UNKNOWN = "unknown";
+    private static final String DEFAULT_DATE = "2000-01-01";
     private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN);
 
 
@@ -153,25 +154,31 @@ public class SparkApp {
                 List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
                 for (List<Event> eventList : eventConnections) {
                     for (Event event : eventList) {
-
-                        FacebookEventInfo fe = new FacebookEventInfo(event.getId(), event.getName(), event.getDescription(), event.getAttendingCount(), event.getStartTime().toString(), tag);
-                        if (event.getPlace() != null && event.getPlace().getLocation() != null && event.getPlace().getLocation().getCity() != null) {
-                            fe.setCity(event.getPlace().getLocation().getCity());
-                        } else {
-                            fe.setCity(UNKNOWN);
-                        }
-
-                        String[] words = event.getDescription().split("\\s+");
-
-                        for (String word : words) {
-                            Integer f = fe.getWordsHistogram().get(word);
-                            if (f == null) {
-                                fe.getWordsHistogram().put(word, 1);
+                        if (event != null) {
+                            FacebookEventInfo fe = new FacebookEventInfo(event.getId(), event.getName(), event.getDescription(), event.getAttendingCount(), tag);
+                            if (event.getPlace() != null && event.getPlace().getLocation() != null && event.getPlace().getLocation().getCity() != null) {
+                                fe.setCity(event.getPlace().getLocation().getCity());
                             } else {
-                                fe.getWordsHistogram().put(word, f + 1);
+                                fe.setCity(UNKNOWN);
                             }
+                            if (event.getStartTime() !=null) {
+                                fe.setDate(event.getStartTime().toString().substring(0,10));
+                            } else {
+                                fe.setDate(DEFAULT_DATE);
+                            }
+
+                            String[] words = event.getDescription().split("\\s+");
+
+                            for (String word : words) {
+                                Integer f = fe.getWordsHistogram().get(word);
+                                if (f == null) {
+                                    fe.getWordsHistogram().put(word, 1);
+                                } else {
+                                    fe.getWordsHistogram().put(word, f + 1);
+                                }
+                            }
+                            eventsPerTag.add(fe);
                         }
-                        eventsPerTag.add(fe);
                     }
                 }
 

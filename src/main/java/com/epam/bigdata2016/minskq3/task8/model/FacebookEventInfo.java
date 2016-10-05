@@ -21,12 +21,11 @@ public class FacebookEventInfo implements Serializable{
     public FacebookEventInfo() {
     }
 
-    public FacebookEventInfo(String id, String name, String desc, int attendingCount, String date, String tag) {
+    public FacebookEventInfo(String id, String name, String desc, int attendingCount, String tag) {
         this.id = id;
         this.name = name;
         this.desc = desc;
         this.attendingCount = attendingCount;
-        this.date = date;
         this.tag = tag;
     }
 
