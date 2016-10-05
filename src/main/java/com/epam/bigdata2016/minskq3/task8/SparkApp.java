@@ -25,7 +25,7 @@ import static java.util.Comparator.reverseOrder;
 
 public class SparkApp {
     private static final String SPACE = " ";
-    private static final String FACEBOOK_TOKEN = "EAACEdEose0cBANTnEt9SbjbmNZCZA7nqEmQQpSqPeFfzXSUJv7xh0LqZClS8ZA31c2gZCe923LeL566GA6iVqf6aKZCMOTFKor0WvRVPegBH9E5qYviGRYAOj3lZCYxZBNFWZAoQJG0FeIlIWqexgl3OAm0R03VTEmSHU0aRDsJCI9gZDZD";
+    private static final String FACEBOOK_TOKEN = "EAACEdEose0cBAFyq93cZBM77pifFYgl1B3ZCPNH1IAlV0WoardNCaShkMo1AMkbBG1oVyAGgDwele2NazDs6D1fDZCFSfFErQtswCUc5hFA8JvR19NOlj2VrEbAD65DRZCYKAfFHwGoZCa9FoZA04fJc7MxiYATJKr0yB0zIZCFJgZDZD";
     private static final String UNKNOWN = "unknown";
     private static final String DEFAULT_DATE = "2000-01-01";
     private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN, Version.VERSION_2_5);
