@@ -278,6 +278,7 @@ public class SparkApp {
         JavaPairRDD<FacebookAttendeeInfo, Integer> allAttendesPairRDD = allAttendeesRDD.mapToPair(new PairFunction<FacebookAttendeeInfo, FacebookAttendeeInfo, Integer>() {
             @Override
             public Tuple2<FacebookAttendeeInfo, Integer> call(FacebookAttendeeInfo fei) {
+                System.out.println("!!!!!!1 " + fei.getName());
                 return new Tuple2<>(fei, 1);
             }
         });
@@ -292,14 +293,14 @@ public class SparkApp {
         JavaRDD<FacebookAttendeeInfo> faiResultRDD = allAttendesCounts.map(new Function<Tuple2<FacebookAttendeeInfo, Integer>, FacebookAttendeeInfo>() {
             @Override
             public FacebookAttendeeInfo call(Tuple2<FacebookAttendeeInfo, Integer> t) throws Exception {
-                t._1().setCount(t._2);
+                t._1().setCount(t._2());
                 return t._1();
             }
         });
 
         System.out.println("### TASK3. Beside this collect all the attendees and visitors of this events and places by name with amount of occurrences; ");
         System.out.println("==================================================================");
-        List<FacebookAttendeeInfo> output3 = faiResultRDD.collect().subList(0, 10);
+        List<FacebookAttendeeInfo> output3 = faiResultRDD.collect();
         for (FacebookAttendeeInfo fai : output3) {
             System.out.println("%%%3" + fai.getId() + " " + fai.getName() + " " + fai.getCount());
         }
