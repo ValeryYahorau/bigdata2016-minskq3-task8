@@ -25,7 +25,7 @@ import static java.util.Comparator.reverseOrder;
 
 public class SparkApp {
     private static final String SPACE = " ";
-    private static final String FACEBOOK_TOKEN = "EAACEdEose0cBAJY5tZBdQ926nS8OZAYbC9Cf3KYE5WAjNzBZAoyb63yBXdQFAdhgENoGB9ZABHTRZCTeWjeYZBizpo39prolgs8CA7XyXyldopYuIncnjHo67V7YvFzv96AhQTmsbpdMLne7LBTYXpC08VCvZCyCuuwGSOfmAqx7gZDZD";
+    private static final String FACEBOOK_TOKEN = "EAACEdEose0cBAB6kMMrUZAT3U0SZA5GmGCIZAOB7phCxu0bZCQQ5kzVZC40Id5zH7Cx3OrjrwMzIGD0EDbQi1xmw2v4kGDHE7UJbCHPeHdfs8JlMJkCmu3hycTVu61mK4UAqqkYxbQwQrs5jMRuL1RZAhwym6ORZB5BBthBZC12KCAZDZD";
     private static final String UNKNOWN = "unknown";
     private static final String DEFAULT_DATE = "2000-01-01";
     private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN, Version.VERSION_2_5);
@@ -254,7 +254,7 @@ public class SparkApp {
             public FacebookEventInfo call(FacebookEventInfo fei) throws Exception {
 
                 System.out.println("%%%1 " + fei.getId());
-                Connection<User> attendesConncetions = facebookClient.fetchConnection(fei.getId() + "/attending", User.class, Parameter.with("limit", 500));
+                Connection<User> attendesConncetions = facebookClient.fetchConnection(fei.getId() + "/attending", User.class, Parameter.with("limit", 1000));
                 List<FacebookAttendeeInfo> result = new ArrayList<FacebookAttendeeInfo>();
                 for (List<User> userList : attendesConncetions) {
                     System.out.println("%%%2 " + userList.size());
