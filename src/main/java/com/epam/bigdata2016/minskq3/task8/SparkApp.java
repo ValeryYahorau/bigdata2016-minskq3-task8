@@ -148,11 +148,13 @@ public class SparkApp {
         JavaRDD<TagEvents> tagsWithEventsRDD = uniqueTagsRDD.map(new Function<String, TagEvents>() {
             public TagEvents call(String tag) throws Exception {
 
+                System.out.println("$$$1 " + tag);
                 Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
                         Parameter.with("q", tag), Parameter.with("type", "event"));
 
                 List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
                 for (List<Event> eventList : eventConnections) {
+                    System.out.println("$$$2 " + eventList.size());
                     for (Event event : eventList) {
                         if (event != null) {
                             FacebookEventInfo fe = new FacebookEventInfo(event.getId(), event.getName(), event.getDescription(), event.getAttendingCount(), tag);
