@@ -1,6 +1,7 @@
 package com.epam.bigdata2016.minskq3.task8;
 
 import com.epam.bigdata2016.minskq3.task8.model.*;
+import com.esotericsoftware.kryo.Kryo;
 import com.restfb.*;
 import com.restfb.types.Event;
 import com.restfb.types.User;
@@ -11,6 +12,7 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.serializer.KryoRegistrator;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -20,17 +22,28 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 import static java.util.Comparator.reverseOrder;
 
 
 public class SparkApp {
+
     private static final String SPACE = " ";
     private static final String FACEBOOK_TOKEN = "EAAPP1tZBuTCoBAAmyoQMwtBH4hMvcZBd8mzqHjxUIOB1ob0DmCWAbFTlotZBw2QzVnXCnTu5J84IZBu4IsMitVFTKwI9DtwCGFmJZBVZBuZCc5zW7Ou9GCepv7ZAANQOoUulYuXlUZBTRRXjCkPe2JMBjx9iE7dvGv2IZD";
     private static final String UNKNOWN = "unknown";
     private static final String DEFAULT_DATE = "2000-01-01";
     private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN, Version.VERSION_2_5);
     private static final SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd");
+
+    public static class CustomKryoRegistrator implements KryoRegistrator {
+        public void registerClasses(Kryo kryo) {
+            kryo.register(DayCity.class);
+            kryo.register(DayCityTag.class);
+            kryo.register(FacebookAttendeeInfo.class);
+            kryo.register(LogLineEntity.class);
+            kryo.register(TagEvents.class);
+            kryo.register(TagsLineEntity.class);
+        }
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -57,7 +70,11 @@ public class SparkApp {
         String filePath3 = "hdfs://sandbox.hortonworks.com:8020/tmp/sparkhw1/in3.txt";
 
 
-        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", warehouseDir).getOrCreate();
+        SparkSession spark = SparkSession.builder().appName("Spark facebook integration App")
+                .config("spark.sql.warehouse.dir", warehouseDir)
+                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+                .config("spark.kryo.registrator", CustomKryoRegistrator.class.getName())
+                .getOrCreate();
 
         //TAGS
         Dataset<String> data = spark.read().textFile(filePath2);
