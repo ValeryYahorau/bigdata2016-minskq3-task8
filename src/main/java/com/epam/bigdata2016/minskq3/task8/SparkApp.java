@@ -32,6 +32,7 @@ public class SparkApp {
     private static final String SPACE = " ";
     private static final String FACEBOOK_TOKEN = "EAACEdEose0cBANTnEt9SbjbmNZCZA7nqEmQQpSqPeFfzXSUJv7xh0LqZClS8ZA31c2gZCe923LeL566GA6iVqf6aKZCMOTFKor0WvRVPegBH9E5qYviGRYAOj3lZCYxZBNFWZAoQJG0FeIlIWqexgl3OAm0R03VTEmSHU0aRDsJCI9gZDZD";
     private static final String UNKNOWN = "unknown";
+    private static final FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN);
 
 
     public static void main(String[] args) throws Exception {
@@ -143,10 +144,9 @@ public class SparkApp {
             }
         }).distinct();
 
-        FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN);
-
         JavaRDD<TagEvents> tagsWithEventsRDD = uniqueTagsRDD.map(new Function<String, TagEvents>() {
             public TagEvents call(String tag) throws Exception {
+
                 Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
                         Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "id,name,description,place,attending_count"));
 
