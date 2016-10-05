@@ -1,13 +1,12 @@
 package com.epam.bigdata2016.minskq3.task8;
 
 
+import com.epam.bigdata2016.minskq3.task8.model.*;
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.types.Event;
-import com.restfb.types.User;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
@@ -15,22 +14,24 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
-import scala.Tuple3;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.reverseOrder;
 import static java.util.stream.Collectors.*;
 
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+
 public class SparkApp {
-    private static final Pattern SPACE = Pattern.compile(" ");
-    private static final String FACEBOOK_TOKEN = "EAACEdEose0cBAODjSDumIec8GmsZAliFr3Gl5K8kC7tOyNY6g4orZANWln8J4LOsDfra5sDnK4wqM7mNijxXqIplZBXXgp8kozLZBqmyqGH4MtXq0HsUzsATbmQKISztsrsRI03tSEuHDKBsHf3knpWgqPvdGWYlEiWQhZBl9lQZDZD";
+    private static final String SPACE = " ";
+    private static final String FACEBOOK_TOKEN = "EAACEdEose0cBANTnEt9SbjbmNZCZA7nqEmQQpSqPeFfzXSUJv7xh0LqZClS8ZA31c2gZCe923LeL566GA6iVqf6aKZCMOTFKor0WvRVPegBH9E5qYviGRYAOj3lZCYxZBNFWZAoQJG0FeIlIWqexgl3OAm0R03VTEmSHU0aRDsJCI9gZDZD";
+    private static final String UNKNOWN = "unknown";
 
 
     public static void main(String[] args) throws Exception {
@@ -49,7 +50,9 @@ public class SparkApp {
         SparkSession spark = SparkSession.builder().appName("Spark facebook integration App").config("spark.sql.warehouse.dir", "hdfs:///tmp/sparkhw1").getOrCreate();
 
         //TAGS
-        JavaRDD<String> tagsRDD = spark.read().textFile(filePath2).javaRDD();
+        Dataset<String> data = spark.read().textFile(filePath2);
+        String header = data.first();
+        JavaRDD<String> tagsRDD = data.filter(x -> !x.equals(header)).javaRDD();
         JavaPairRDD<Long, List<String>> tagsIdsPairs = tagsRDD.mapToPair(new PairFunction<String, Long, List<String>>() {
             @Override
             public Tuple2<Long, List<String>> call(String line) {
@@ -60,7 +63,9 @@ public class SparkApp {
         Map<Long, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
 
         //CITIES
-        JavaRDD<String> citiesRDD = spark.read().textFile(filePath3).javaRDD();
+        Dataset<String> data2 = spark.read().textFile(filePath3);
+        String header2 = data.first();
+        JavaRDD<String> citiesRDD = data.filter(x -> !x.equals(header)).javaRDD();
         JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
             @Override
             public Tuple2<Integer, String> call(String line) {
@@ -71,36 +76,39 @@ public class SparkApp {
         Map<Integer, String> citiesMap = citiesIdsPairs.collectAsMap();
 
         //LOGS with tags and cities
-        JavaRDD<LogEntity> logEntitiesRDD = spark.read().textFile(filePath1).javaRDD().map(new Function<String, LogEntity>() {
+        JavaRDD<LogLineEntity> logEntitiesRDD = spark.read().textFile(filePath1).javaRDD().map(new Function<String, LogLineEntity>() {
             @Override
-            public LogEntity call(String line) throws Exception {
+            public LogLineEntity call(String line) throws Exception {
                 String[] parts = line.split("\\s+");
 
-                LogEntity logEntity = new LogEntity();
+                LogLineEntity logLineEntity = new LogLineEntity();
 
-                logEntity.setUserTagsId(Long.parseLong(parts[parts.length - 2]));
-                List<String> tagsList = tagsMap.get(logEntity.getUserTagsId());
-                logEntity.setTags(tagsList);
+                logLineEntity.setUserTagsId(Long.parseLong(parts[parts.length - 2]));
+                List<String> tagsList = tagsMap.get(logLineEntity.getUserTagsId());
+                logLineEntity.setTags(tagsList);
 
-                logEntity.setCityId(Integer.parseInt(parts[parts.length - 15]));
-                String city = citiesMap.get(logEntity.getCityId());
-                logEntity.setCity(city);
+                logLineEntity.setCityId(Integer.parseInt(parts[parts.length - 15]));
+                String city = citiesMap.get(logLineEntity.getCityId());
+                logLineEntity.setCity(city);
 
                 String dateInString = parts[1].substring(0, 8);
-                logEntity.setDate(dateInString);
-                return logEntity;
+                logLineEntity.setDate(dateInString);
+                return logLineEntity;
             }
         });
-        JavaPairRDD<DayCity, List<String>> dayCityTagsPrePairs = logEntitiesRDD.mapToPair(new PairFunction<LogEntity, DayCity, List<String>>() {
+
+        //TASK1
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        JavaPairRDD<DayCity, List<String>> dayCityPrePairs = logEntitiesRDD.mapToPair(new PairFunction<LogLineEntity, DayCity, List<String>>() {
             @Override
-            public Tuple2<DayCity, List<String>> call(LogEntity le) {
+            public Tuple2<DayCity, List<String>> call(LogLineEntity le) {
                 DayCity dc = new DayCity();
                 dc.setCity(le.getCity());
                 dc.setDate(le.getDate());
                 return new Tuple2<DayCity, List<String>>(dc, le.getTags());
             }
         });
-        JavaPairRDD<DayCity, List<String>> dayCityTagsPairs = dayCityTagsPrePairs.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {
+        JavaPairRDD<DayCity, List<String>> dayCityPairs = dayCityPrePairs.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {
             @Override
             public List<String> call(List<String> i1, List<String> i2) {
                 List<String> a1 = new ArrayList<>(i1);
@@ -112,7 +120,7 @@ public class SparkApp {
             }
         });
 
-        List<Tuple2<DayCity, List<String>>> output = dayCityTagsPairs.collect();
+        List<Tuple2<DayCity, List<String>>> output = dayCityPairs.collect();
         System.out.println("### TASK1. Collect all unique keyword per day per location (city);");
         System.out.println("==================================================================");
         for (Tuple2<DayCity, List<String>> tuple : output) {
@@ -124,8 +132,116 @@ public class SparkApp {
             System.out.println("\n==================================================================");
         }
 
+        //TASK2
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        JavaRDD<String> uniqueTagsRDD = logEntitiesRDD.flatMap(new FlatMapFunction<LogLineEntity, String>() {
+            @Override
+            public Iterator<String> call(LogLineEntity le) {
+                return le.getTags().iterator();
+            }
+        }).distinct();
 
-//        Dataset<Row> logsDF = spark.createDataFrame(logEntitiesRDD, LogEntity.class);
+        FacebookClient facebookClient = new DefaultFacebookClient(FACEBOOK_TOKEN);
+
+        JavaRDD<TagEvents> tagsWithEventsRDD = uniqueTagsRDD.map(new Function<String, TagEvents>() {
+            public TagEvents call(String tag) throws Exception {
+                Connection<Event> eventConnections = facebookClient.fetchConnection("search", Event.class,
+                        Parameter.with("q", tag), Parameter.with("type", "event"), Parameter.with("fields", "id,name,description,place,attending_count"));
+
+                List<FacebookEventInfo> eventsPerTag = new ArrayList<FacebookEventInfo>();
+                for (List<Event> eventList : eventConnections) {
+                    for (Event event : eventList) {
+
+                        FacebookEventInfo fe = new FacebookEventInfo(event.getId(), event.getName(), event.getDescription(), event.getAttendingCount(), event.getStartTime().toString(), tag);
+                        if (event.getPlace() != null && event.getPlace().getLocation() != null && event.getPlace().getLocation().getCity() != null) {
+                            fe.setCity(event.getPlace().getLocation().getCity());
+                        } else {
+                            fe.setCity(UNKNOWN);
+                        }
+
+                        String[] words = event.getDescription().split("\\s+");
+
+                        for (String word : words) {
+                            Integer f = fe.getWordsHistogram().get(word);
+                            if (f == null) {
+                                fe.getWordsHistogram().put(word, 1);
+                            } else {
+                                fe.getWordsHistogram().put(word, f + 1);
+                            }
+                        }
+                        eventsPerTag.add(fe);
+                    }
+                }
+
+                TagEvents te = new TagEvents();
+                te.setTag(tag);
+                te.setEvents(eventsPerTag);
+
+                return te;
+            }
+        });
+
+        JavaRDD<FacebookEventInfo> allEventsRDD = tagsWithEventsRDD.flatMap(new FlatMapFunction<TagEvents, FacebookEventInfo>() {
+            @Override
+            public Iterator<FacebookEventInfo> call(TagEvents te) {
+                return te.getEvents().iterator();
+            }
+        });
+
+        JavaPairRDD<DayCityTag, FacebookEventInfo> dayCityTagsPrePairs = allEventsRDD.mapToPair(new PairFunction<FacebookEventInfo, DayCityTag, FacebookEventInfo>() {
+            @Override
+            public Tuple2<DayCityTag, FacebookEventInfo> call(FacebookEventInfo fe) {
+                DayCityTag dct = new DayCityTag();
+                dct.setCity(fe.getCity());
+                dct.setTag(fe.getTag());
+                dct.setDate(fe.getDate());
+                return new Tuple2<DayCityTag, FacebookEventInfo>(dct, fe);
+            }
+        });
+
+        JavaPairRDD<DayCityTag, FacebookEventInfo> dayCityTagsPairs = dayCityTagsPrePairs.reduceByKey(new Function2<FacebookEventInfo, FacebookEventInfo, FacebookEventInfo>() {
+            @Override
+            public FacebookEventInfo call(FacebookEventInfo i1, FacebookEventInfo i2) {
+                FacebookEventInfo fei = new FacebookEventInfo();
+                fei.setAttendingCount(i1.getAttendingCount() + i2.getAttendingCount());
+
+                Map<String, Integer> map1 = i1.getWordsHistogram();
+                for (String currentWord : i2.getWordsHistogram().keySet()) {
+                    Integer f1 = map1.get(currentWord);
+                    Integer f2 = i2.getWordsHistogram().get(currentWord);
+                    if (f1 == null) {
+                        map1.put(currentWord, f2);
+                    } else {
+                        map1.put(currentWord, f1 + f2);
+                    }
+                }
+                fei.setWordsHistogram(map1);
+                return fei;
+            }
+        });
+
+        List<Tuple2<DayCityTag, FacebookEventInfo>> output2 = dayCityTagsPairs.collect();
+        System.out.println("### TASK2.o\tFor each keyword per day per city store information like: KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N). ");
+        System.out.println("==================================================================");
+        for (Tuple2<DayCityTag, FacebookEventInfo> tuple : output2) {
+
+            System.out.println("KEYWORD : " + tuple._1().getTag() + " DAY : " + tuple._1().getDate() + " CITY : " + tuple._1().getCity());
+            System.out.println("TOTAL_AMOUNT_OF_VISITORS : " + tuple._2.getAttendingCount());
+
+
+            Map<String, Integer> sortedMap = tuple._2.getWordsHistogram().entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(reverseOrder())).limit(10)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+            System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10)  : ");
+            for (String str : sortedMap.keySet()) {
+                System.out.println(str + "_" + sortedMap.get(str));
+            }
+            System.out.println("\n==================================================================");
+        }
+
+
+//        Dataset<Row> logsDF = spark.createDataFrame(logEntitiesRDD, LogLineEntity.class);
 //        logsDF.createOrReplaceTempView("logs");
 //        logsDF.show();
 
@@ -136,39 +252,6 @@ public class SparkApp {
 //
 //
 //
-//
-//
-//
-//        //lines.
-//        JavaRDD<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
-//            @Override
-//            public Iterator<String> call(String s) {
-//                return Arrays.asList(SPACE.split(s)).iterator();
-//            }
-//        });
-//
-//        JavaPairRDD<String, Integer> ones = words.mapToPair(
-//            new PairFunction<String, String, Integer>() {
-//                @Override
-//                public Tuple2<String, Integer> call(String s) {
-//                    return new Tuple2<>(s, 1);
-//                }
-//            });
-//
-//        JavaPairRDD<String, Integer> counts = ones.reduceByKey(
-//            new Function2<Integer, Integer, Integer>() {
-//                @Override
-//                public Integer call(Integer i1, Integer i2) {
-//                    return i1 + i2;
-//                }
-//            });
-//
-//        List<Tuple2<String, Integer>> output = counts.collect();
-//        System.out.println("####1");
-//        for (Tuple2<?, ?> tuple : output) {
-//            System.out.println(tuple._1() + ": " + tuple._2());
-//        }
-//        System.out.println("####2");
 //
 //        List<String> keyWords = new ArrayList<>();
 //        keyWords.add("minsk");

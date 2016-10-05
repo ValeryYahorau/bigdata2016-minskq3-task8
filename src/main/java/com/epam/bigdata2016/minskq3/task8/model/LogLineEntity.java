@@ -1,4 +1,4 @@
-package com.epam.bigdata2016.minskq3.task8;
+package com.epam.bigdata2016.minskq3.task8.model;
 
 import java.util.Date;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by valeryyegorov on 04.10.16.
  */
-public class LogEntity {
+public class LogLineEntity {
 
     private long userTagsId;
     private List<String> tags;
@@ -56,7 +56,7 @@ public class LogEntity {
 
     @Override
     public String toString() {
-        return "LogEntity{" +
+        return "LogLineEntity{" +
                 "userTagsId=" + userTagsId +
                 ", tags=" + tags +
                 ", date='" + date + '\'' +

@@ -1,11 +1,11 @@
-package com.epam.bigdata2016.minskq3.task8;
+package com.epam.bigdata2016.minskq3.task8.model;
 
 import java.util.List;
 
 /**
  * Created by valeryyegorov on 04.10.16.
  */
-public class TagsEntity {
+public class TagsLineEntity {
 
     private long tagsId;
     private List<String> tags;
