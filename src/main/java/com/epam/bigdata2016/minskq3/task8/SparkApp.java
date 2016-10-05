@@ -314,6 +314,8 @@ public class SparkApp {
         allAttendeesDF2.orderBy(functions.desc("count"));
         allAttendeesDF2.show();
 
+        allAttendeesDF2.filter(functions.col("count").gt(1)).show();
+
         spark.stop();
     }
 
