@@ -1,7 +1,6 @@
 package com.epam.bigdata2016.minskq3.task8.model;
 
-import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Created by valeryyegorov on 04.10.16.
@@ -9,7 +8,7 @@ import java.util.List;
 public class LogLineEntity {
 
     private long userTagsId;
-    private List<String> tags;
+    private Set<String> tags;
     private String date;
     private int cityId;
     private String city;
@@ -38,11 +37,11 @@ public class LogLineEntity {
         this.cityId = cityId;
     }
 
-    public List<String> getTags() {
+    public Set<String> getTags() {
         return tags;
     }
 
-    public void setTags(List<String> tags) {
+    public void setTags(Set<String> tags) {
         this.tags = tags;
     }
 

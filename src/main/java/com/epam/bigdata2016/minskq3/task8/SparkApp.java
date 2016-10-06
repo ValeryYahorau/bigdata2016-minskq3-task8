@@ -79,11 +79,11 @@ public class SparkApp {
         Dataset<String> data = spark.read().textFile(filePath2);
         String header = data.first();
         JavaRDD<String> tagsRDD = data.filter(x -> !x.equals(header)).javaRDD();
-        JavaPairRDD<Long, List<String>> tagsIdsPairs = tagsRDD.mapToPair((PairFunction<String, Long, List<String>>) line -> {
+        JavaPairRDD<Long, Set<String>> tagsIdsPairs = tagsRDD.mapToPair((PairFunction<String, Long, Set<String>>) line -> {
             String[] parts = line.split("\\s+");
-            return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
+            return new Tuple2<Long, Set<String>>(Long.parseLong(parts[0]), new HashSet<String>(Arrays.asList(parts[1].split(","))));
         });
-        Map<Long, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
+        Map<Long, Set<String>> tagsMap = tagsIdsPairs.collectAsMap();
         tagsRDD.unpersist();
         data.unpersist();
 
@@ -104,17 +104,11 @@ public class SparkApp {
             String[] parts = line.split("\\s+");
 
             LogLineEntity logLineEntity = new LogLineEntity();
-
             logLineEntity.setUserTagsId(Long.parseLong(parts[parts.length - 2]));
-            List<String> tagsList = tagsMap.get(logLineEntity.getUserTagsId());
-            logLineEntity.setTags(tagsList);
-
+            logLineEntity.setTags(tagsMap.get(logLineEntity.getUserTagsId()));
             logLineEntity.setCityId(Integer.parseInt(parts[parts.length - 15]));
-            String city = citiesMap.get(logLineEntity.getCityId());
-            logLineEntity.setCity(city);
-
-            String dateInString = parts[1].substring(0, 8);
-            logLineEntity.setDate(dateInString);
+            logLineEntity.setCity(citiesMap.get(logLineEntity.getCityId()));
+            logLineEntity.setDate(parts[1].substring(0, 8));
             return logLineEntity;
         });
 
@@ -125,7 +119,7 @@ public class SparkApp {
                     DayCity dc = new DayCity();
                     dc.setCity(le.getCity());
                     dc.setDate(le.getDate());
-                    return new Tuple2<DayCity, Set<String>>(dc, new HashSet<>(le.getTags()));
+                    return new Tuple2<DayCity, Set<String>>(dc, le.getTags());
                 });
         JavaPairRDD<DayCity, Set<String>> dayCityPairs =
                 dayCityPrePairs.reduceByKey((Function2<Set<String>, Set<String>, Set<String>>) (i1, i2) -> {
