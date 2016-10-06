@@ -212,8 +212,7 @@ public class SparkApp {
 
         JavaPairRDD<DayCityTag, FacebookEventInfo> dayCityTagsPairs =
                 dayCityTagsPrePairs.reduceByKey((Function2<FacebookEventInfo, FacebookEventInfo, FacebookEventInfo>) (i1, i2) -> {
-                    FacebookEventInfo fei = new FacebookEventInfo();
-                    fei.setAttendingCount(i1.getAttendingCount() + i2.getAttendingCount());
+                    i1.setAttendingCount(i1.getAttendingCount() + i2.getAttendingCount());
 
                     Map<String, Integer> map1 = i1.getWordsHistogram();
                     for (String currentWord : i2.getWordsHistogram().keySet()) {
@@ -225,8 +224,8 @@ public class SparkApp {
                             map1.put(currentWord, f1 + f2);
                         }
                     }
-                    fei.setWordsHistogram(map1);
-                    return fei;
+                    i1.setWordsHistogram(map1);
+                    return i1;
                 });
 
         List<Tuple2<DayCityTag, FacebookEventInfo>> output2 = dayCityTagsPairs.collect();
