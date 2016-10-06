@@ -47,7 +47,6 @@ public class SparkApp {
 
     public static void main(String[] args) throws Exception {
 
-//
 //        FacebookClient.AccessToken accessToken = new DefaultFacebookClient(Version.VERSION_2_5).obtainUserAccessToken()
 //                .obtainAppAccessToken("1072946712824874", "0ec3b51b8c9f84fe7ab8ff1558ad7df6");
 //
@@ -85,6 +84,8 @@ public class SparkApp {
             return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
         });
         Map<Long, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
+        tagsRDD.unpersist();
+        data.unpersist();
 
         //CITIES
         Dataset<String> data2 = spark.read().textFile(filePath3);
@@ -95,6 +96,8 @@ public class SparkApp {
             return new Tuple2<Integer, String>(Integer.parseInt(parts[0]), parts[1]);
         });
         Map<Integer, String> citiesMap = citiesIdsPairs.collectAsMap();
+        citiesRDD.unpersist();
+        data2.unpersist();
 
         //LOGS with tags and cities
         JavaRDD<LogLineEntity> logEntitiesRDD = spark.read().textFile(filePath1).javaRDD().map((Function<String, LogLineEntity>) line -> {
@@ -117,27 +120,23 @@ public class SparkApp {
 
         //TASK1
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        JavaPairRDD<DayCity, List<String>> dayCityPrePairs =
-                logEntitiesRDD.mapToPair((PairFunction<LogLineEntity, DayCity, List<String>>) le -> {
+        JavaPairRDD<DayCity, Set<String>> dayCityPrePairs =
+                logEntitiesRDD.mapToPair((PairFunction<LogLineEntity, DayCity, Set<String>>) le -> {
                     DayCity dc = new DayCity();
                     dc.setCity(le.getCity());
                     dc.setDate(le.getDate());
-                    return new Tuple2<DayCity, List<String>>(dc, le.getTags());
+                    return new Tuple2<DayCity, Set<String>>(dc, new HashSet<>(le.getTags()));
                 });
-        JavaPairRDD<DayCity, List<String>> dayCityPairs =
-                dayCityPrePairs.reduceByKey((Function2<List<String>, List<String>, List<String>>) (i1, i2) -> {
-                    List<String> a1 = new ArrayList<>(i1);
-                    List<String> a2 = new ArrayList<>(i2);
-
-                    a1.removeAll(a2);
-                    a1.addAll(a2);
-                    return a1;
+        JavaPairRDD<DayCity, Set<String>> dayCityPairs =
+                dayCityPrePairs.reduceByKey((Function2<Set<String>, Set<String>, Set<String>>) (i1, i2) -> {
+                    i1.addAll(i2);
+                    return i1;
                 });
 
-        List<Tuple2<DayCity, List<String>>> output = dayCityPairs.collect();
+        List<Tuple2<DayCity, Set<String>>> output = dayCityPairs.collect();
         System.out.println("### TASK1. Collect all unique keyword per day per location (city);");
         System.out.println("==================================================================");
-        for (Tuple2<DayCity, List<String>> tuple : output) {
+        for (Tuple2<DayCity, Set<String>> tuple : output) {
             System.out.println("City : " + tuple._1().getCity() + " and date : " + tuple._1().getDate() + " have next tags: ");
             if (tuple._2 != null) {
                 for (String tag : tuple._2()) {
